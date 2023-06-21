@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-// react-bootstrap components
 import {
-  Badge,
   Button,
   Card,
-  Navbar,
-  Nav,
   Table,
   Container,
   Row,
@@ -20,9 +16,8 @@ function Typography() {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
-    name: "",
     type: "",
-    price: "",
+    image: "",
   });
 
   useEffect(() => {
@@ -46,29 +41,28 @@ function Typography() {
 
   const handleAdd = () => {
     setShowModal(true);
-    // Réinitialisez le formulaire si nécessaire
     setFormData({
       id: "",
-      name: "",
       type: "",
-      price: "",
+      image: "",
     });
   };
 
   const handleEdit = (articleId) => {
+    
     setShowModal(true);
-    // Obtenez les détails de l'article à modifier en fonction de l'ID
-    const article = articles.find((article) => article._id === articleId);
-
-    // Remplissez le formulaire avec les détails de l'article
+    // find
+    const article = articles.find(
+      
+      (article) => article._id.toString() === articleId.toString()
+    );
+  
     setFormData({
       id: article._id,
-      name: article.name,
       type: article.type,
-      price: article.price,
+      image: article.image,
     });
   };
-
   const handleCloseModal = () => {
     setShowModal(false);
   };
@@ -84,23 +78,41 @@ function Typography() {
     event.preventDefault();
 
     try {
+      const formDataObject = new FormData();
+      formDataObject.append("type", formData.type);
+      formDataObject.append("image", formData.image);
+
       if (formData.id) {
-        // Logique de mise à jour de l'article
-        await axios.put(`/article/updateArticle/${formData.id}`, formData);
+        // Logic to update the article
+        await axios.put(
+          `/article/updateArticle/${formData.id}`,
+          formDataObject
+        );
+        console.log("Article updated successfully");
       } else {
-        // Logique d'ajout d'un nouvel article
-        await axios.post("/article/addArticle", formData);
+        // Logic to add a new article
+        await axios.post("/article/addArticle", formDataObject, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log("Article added successfully");
       }
 
       handleCloseModal();
       fetchArticles();
     } catch (error) {
       console.error(error);
+      console.log(
+        "Error occurred while adding/updating article:",
+        error.message
+      );
     }
   };
 
   const deleteArticle = async (id) => {
     try {
+      console.log(id);
       await axios.delete(`/article/deleteArticle/${id}`);
       fetchArticles();
     } catch (error) {
@@ -125,9 +137,9 @@ function Typography() {
                   <thead>
                     <tr>
                       <th className="border-0">ID</th>
-                      <th className="border-0">Name</th>
-                      <th className="border-0">Price</th>
                       <th className="border-0">Type</th>
+                      <th className="border-0">Image</th>
+
                       <th className="border-0">Action</th>
                     </tr>
                   </thead>
@@ -135,9 +147,14 @@ function Typography() {
                     {articles.map((article, index) => (
                       <tr key={article._id}>
                         <td>{index + 1}</td>
-                        <td>{article.name}</td>
-                        <td>{article.price}Dt</td>
                         <td>{article.type}</td>
+                        <td>
+                          <img
+                            src={`/uploads/${article.image}`}
+                            alt="Image de l'article"
+                            style={{ width: "100px" }}
+                          />
+                        </td>
                         <td>
                           <Button
                             variant="info"
@@ -147,7 +164,7 @@ function Typography() {
                           </Button>{" "}
                           <Button
                             variant="danger"
-                            onClick={() => deleteArticle(article.id)}
+                            onClick={() => deleteArticle(article._id)}
                           >
                             Supprimer
                           </Button>
@@ -171,17 +188,6 @@ function Typography() {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <Form.Group controlId="formName">
-              <Form.Label>Nom</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-
             <Form.Group controlId="formType">
               <Form.Label>Type</Form.Label>
               <Form.Control
@@ -194,13 +200,25 @@ function Typography() {
             </Form.Group>
 
             <Form.Group controlId="formPrice">
-              <Form.Label>Prix</Form.Label>
+              <Form.Label>Image</Form.Label>
               <Form.Control
-                type="number"
-                name="price"
-                value={formData.price}
+                type="text"
+                name="image"
+                value={formData.image}
                 onChange={handleChange}
                 required
+                disabled
+              />
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={(event) => {
+                  const file = event.target.files[0];
+                  setFormData({
+                    ...formData,
+                    image: file,
+                  });
+                }}
               />
             </Form.Group>
 

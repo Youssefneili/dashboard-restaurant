@@ -1,19 +1,29 @@
-import React from "react";
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 // react-bootstrap components
-import {
-  Badge,
-  Button,
-  Card,
-  Navbar,
-  Nav,
-  Table,
-  Container,
-  Row,
-  Col,
-} from "react-bootstrap";
+import { Card, Table, Container, Row, Col } from "react-bootstrap";
 
 function TableList() {
+  const [product, setProduct] = useState([]);
+  useEffect(() => {
+    fetchProduct();
+  }, []);
+
+  const fetchProduct = async () => {
+    try {
+      const response = await axios.get("/product/fetchProduct");
+      const data = response.data;
+
+      if (data.success) {
+        setProduct(data.data);
+      } else {
+        console.log(data.description);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <>
       <Container fluid>
@@ -22,7 +32,6 @@ function TableList() {
             <Card className="strpied-tabled-with-hover">
               <Card.Header>
                 <Card.Title as="h4">Striped Table with Hover</Card.Title>
-                
               </Card.Header>
               <Card.Body className="table-full-width table-responsive px-0">
                 <Table className="table-hover table-striped">
@@ -30,27 +39,32 @@ function TableList() {
                     <tr>
                       <th className="border-0">ID</th>
                       <th className="border-0">Name</th>
-                      <th className="border-0">Salary</th>
-                      <th className="border-0">Country</th>
-                      <th className="border-0">City</th>
+                      <th className="border-0">garnitures</th>
+                      <th className="border-0">images</th>
+                      <th className="border-0">Price</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>Dakota Rice</td>
-                      <td>$36,738</td>
-                      <td>Niger</td>
-                      <td>Oud-Turnhout</td>
-                
-                    </tr>
-                  
+                    {product.map((product, index) => (
+                      <tr key={product._id}>
+                        <td>{index + 1}</td>
+                        <td>{product.name}</td>
+                        <td>{product.garnitures}</td>
+                        <td>
+                          <img
+                            src={`/uploads/${product.image}`}
+                            alt={product.name}
+                            style={{ width: "100px", height: "auto" }}
+                          />
+                        </td>
+                        <td>{product.price}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </Table>
               </Card.Body>
             </Card>
           </Col>
-          
         </Row>
       </Container>
     </>

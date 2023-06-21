@@ -3,6 +3,7 @@
   "version": "2.0.1",
   "dependencies": {
     "@fortawesome/fontawesome-free": "5.15.2",
+    "@react-oauth/google": "^0.11.0",
     "axios": "^1.4.0",
     "bootstrap": "4.6.0",
     "chartist": "0.11.4",
@@ -12,6 +13,7 @@
     "react-bootstrap": "2.4.0",
     "react-chartist": "0.14.4",
     "react-dom": ">=16.8.0",
+    "react-google-login": "^5.2.2",
     "react-notification-alert": "0.0.13",
     "react-router": "5.2.0",
     "react-router-dom": "5.2.0",

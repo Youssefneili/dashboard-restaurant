@@ -1,319 +1,172 @@
-import React from "react";
-// react plugin for creating notifications over the dashboard
-import NotificationAlert from "react-notification-alert";
-// react-bootstrap components
-import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Modal,
-  Navbar,
-  Nav,
-  Container,
-  Row,
-  Col,
-} from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Button, Card, Table, Container, Row, Col } from "react-bootstrap";
 
-function Notifications() {
-  const [showModal, setShowModal] = React.useState(false);
-  const notificationAlertRef = React.useRef(null);
-  const notify = (place) => {
-    var color = Math.floor(Math.random() * 5 + 1);
-    var type;
-    switch (color) {
-      case 1:
-        type = "primary";
-        break;
-      case 2:
-        type = "success";
-        break;
-      case 3:
-        type = "danger";
-        break;
-      case 4:
-        type = "warning";
-        break;
-      case 5:
-        type = "info";
-        break;
-      default:
-        break;
+function Notification() {
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get("/orders/fetchOrder");
+      const data = response.data;
+
+      if (data.success) {
+        setOrders(data.data);
+      } else {
+        console.log(data.description);
+      }
+    } catch (error) {
+      console.error(error);
     }
-    var options = {};
-    options = {
-      place: place,
-      message: (
-        <div>
-          <div>
-            Welcome to <b>Light Bootstrap Dashboard React</b> - a beautiful
-            freebie for every web developer.
-          </div>
-        </div>
-      ),
-      type: type,
-      icon: "nc-icon nc-bell-55",
-      autoDismiss: 7,
-    };
-    notificationAlertRef.current.notificationAlert(options);
   };
+
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      let updatedStatus;
+
+      switch (status) {
+        case "pending":
+          updatedStatus = "accepted";
+          break;
+        case "accepted":
+          updatedStatus = "delivered";
+          break;
+        // case "on the way":
+        //   updatedStatus = "delivered";
+        //   break;
+        case "denied":
+          updatedStatus = "denied";
+          break;
+        default:
+          console.error("Invalid order status");
+          return;
+      }
+
+      const response = await axios.put(`/orders/${orderId}`, {
+        status: updatedStatus,
+      });
+      const data = response.data;
+
+      if (response.status === 200) {
+        // Update the orders list with the updated order
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === orderId ? { ...order, status: updatedStatus } : order
+          )
+        );
+        console.log("Order status updated successfully");
+      } else {
+        console.error("Failed to update order status:", data.error);
+      }
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+    }
+  };
+
   return (
     <>
-      <div className="rna-container">
-        <NotificationAlert ref={notificationAlertRef} />
-      </div>
       <Container fluid>
-        <Card>
-          <Card.Header>
-            <Card.Title as="h4">Notifications</Card.Title>
-            <p className="card-category">
-              You can see all commandes{" "}
-              {/* <a
-                href="https://github.com/EINazare"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Nazare Emanuel-Ioan
-              </a>
-              . Please checkout the{" "}
-              <a
-                href="https://github.com/creativetimofficial/react-notification-alert"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                full documentation.
-              </a> */}
-            </p>
-          </Card.Header>
-          <Card.Body>
-            {/* <Row>
-              <Col md="6">
-                <h5>
-                  <small>Notifications Style</small>
-                </h5>
-                <Alert variant="info">
-                  <span>This is a plain notification</span>
-                </Alert>
-                <Alert variant="info">
-                  <button
-                    aria-hidden={true}
-                    className="close"
-                    data-dismiss="alert"
-                    type="button"
-                  >
-                    <i className="nc-icon nc-simple-remove"></i>
-                  </button>
-                  <span>This is a notification with close button.</span>
-                </Alert>
-                <Alert className="alert-with-icon" variant="info">
-                  <button
-                    aria-hidden={true}
-                    className="close"
-                    data-dismiss="alert"
-                    type="button"
-                  >
-                    <i className="nc-icon nc-simple-remove"></i>
-                  </button>
-                  <span
-                    data-notify="icon"
-                    className="nc-icon nc-bell-55"
-                  ></span>
-                  <span>
-                    This is a notification with close button and icon.
-                  </span>
-                </Alert>
-                <Alert className="alert-with-icon" variant="info">
-                  <button
-                    aria-hidden={true}
-                    className="close"
-                    data-dismiss="alert"
-                    type="button"
-                  >
-                    <i className="nc-icon nc-simple-remove"></i>
-                  </button>
-                  <span
-                    data-notify="icon"
-                    className="nc-icon nc-bell-55"
-                  ></span>
-                  <span>
-                    This is a notification with close button and icon and have
-                    many lines. You can see that the icon and the close button
-                    are always vertically aligned. This is a beautiful
-                    notification. So you don't have to worry about the style.
-                  </span>
-                </Alert>
-              </Col>
-              <Col md="6">
-                <h5>
-                  <small>Notification States</small>
-                </h5>
-                <Alert variant="primary">
-                  <button
-                    aria-hidden={true}
-                    className="close"
-                    data-dismiss="alert"
-                    type="button"
-                  >
-                    <i className="nc-icon nc-simple-remove"></i>
-                  </button>
-                  <span>
-                    <b>Primary -</b>
-                    This is a regular notification made with ".alert-primary"
-                  </span>
-                </Alert>
-                <Alert variant="info">
-                  <button
-                    aria-hidden={true}
-                    className="close"
-                    data-dismiss="alert"
-                    type="button"
-                  >
-                    <i className="nc-icon nc-simple-remove"></i>
-                  </button>
-                  <span>
-                    <b>Info -</b>
-                    This is a regular notification made with ".alert-info"
-                  </span>
-                </Alert>
-                <Alert variant="success">
-                  <button
-                    aria-hidden={true}
-                    className="close"
-                    data-dismiss="alert"
-                    type="button"
-                  >
-                    <i className="nc-icon nc-simple-remove"></i>
-                  </button>
-                  <span>
-                    <b>Success -</b>
-                    This is a regular notification made with ".alert-success"
-                  </span>
-                </Alert>
-                <Alert variant="warning">
-                  <button
-                    aria-hidden={true}
-                    className="close"
-                    data-dismiss="alert"
-                    type="button"
-                  >
-                    <i className="nc-icon nc-simple-remove"></i>
-                  </button>
-                  <span>
-                    <b>Warning -</b>
-                    This is a regular notification made with ".alert-warning"
-                  </span>
-                </Alert>
-                <Alert variant="danger">
-                  <button
-                    aria-hidden={true}
-                    className="close"
-                    data-dismiss="alert"
-                    type="button"
-                  >
-                    <i className="nc-icon nc-simple-remove"></i>
-                  </button>
-                  <span>
-                    <b>Danger -</b>
-                    This is a regular notification made with ".alert-danger"
-                  </span>
-                </Alert>
-              </Col>
-            </Row> */}
-            <br></br>
-            <br></br>
-            <div className="places-buttons">
-              <Row>
-                <Col className="offset-md-3 text-center pb-2" md="6">
-                  <Card.Title as="h4">Notifications Places</Card.Title>
-                  
-                </Col>
-              </Row>
-              <Row className="justify-content-center">
-                <Col lg="3" md="3">
-                  <Button block onClick={() => notify("tl")} variant="default">
-                    Panding
-                  </Button>
-                </Col>
-                <Col lg="3" md="3">
-                  <Button block onClick={() => notify("tc")} variant="default">
-                    Accepted
-                  </Button>
-                </Col>
-                <Col lg="3" md="3">
-                  <Button block onClick={() => notify("tr")} variant="default">
-                    Delivered
-                  </Button>
-                </Col>
-              </Row>
-              <Row className="justify-content-center">
-                <Col lg="3" md="3">
-                  <Button block onClick={() => notify("bl")} variant="default">
-                  On the way
-                  </Button>
-                </Col>
-                {/* <Col lg="3" md="3">
-                  <Button block onClick={() => notify("bc")} variant="default">
-                    Bottom Center
-                  </Button>
-                </Col>
-                <Col lg="3" md="3">
-                  <Button block onClick={() => notify("br")} variant="default">
-                    Bottom Right
-                  </Button>
-                </Col> */}
-              </Row>
-            </div>
-            <Row>
-              <Col className="text-center" md="12">
-                <h4 className="title">Modal</h4>
-                <Button
-                  className="btn-fill btn-wd"
-                  variant="info"
-                  onClick={() => setShowModal(true)}
-                >
-                  Launch Modal Mini
-                </Button>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
-        {/* Mini Modal */}
-        <Modal
-          className="modal-mini modal-primary"
-          show={showModal}
-          onHide={() => setShowModal(false)}
-        >
-          <Modal.Header className="justify-content-center">
-            <div className="modal-profile">
-              <i className="nc-icon nc-bulb-63"></i>
-            </div>
-          </Modal.Header>
-          <Modal.Body className="text-center">
-            <p>Always have an access to your profile</p>
-          </Modal.Body>
-          <div className="modal-footer">
-            <Button
-              className="btn-simple"
-              type="button"
-              variant="link"
-              onClick={() => setShowModal(false)}
-            >
-              Back
-            </Button>
-            <Button
-              className="btn-simple"
-              type="button"
-              variant="link"
-              onClick={() => setShowModal(false)}
-            >
-              Close
-            </Button>
-          </div>
-        </Modal>
-        {/* End Modal */}
+        <Row>
+          <Col md="12">
+            <Card className="strpied-tabled-with-hover">
+              <Card.Header>
+                <Card.Title as="h4">Orders</Card.Title>
+              </Card.Header>
+              <Card.Body className="table-full-width table-responsive px-0">
+                <Table className="table-hover table-striped">
+                  <thead>
+                    <tr>
+                      <th className="border-0">ID</th>
+                      <th className="border-0">Items</th>
+                      <th className="border-0">Total price</th>
+                      <th className="border-0">Status</th>
+                      <th className="border-0">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((order, index) => (
+                      <tr key={order._id}>
+                        <td>{index + 1}</td>
+                        <td>
+                          {order.items &&
+                            order.items.map((item) => (
+                              <div key={item._id}>{item.name}</div>
+                            ))}
+                        </td>
+                        <td>{order.totalPrice}</td>
+                        <td>{order.status}</td>
+                        <td>
+                          {order.status === "pending" && (
+                            <>
+                              <Button
+                                variant="success"
+                                onClick={() =>
+                                  updateOrderStatus(order._id, "accepted")
+                                }
+                              >
+                                Accept
+                              </Button>{" "}
+                              <Button
+                                variant="danger"
+                                onClick={() =>
+                                  updateOrderStatus(order._id, "denied")
+                                }
+                              >
+                                Deny
+                              </Button>
+                            </>
+                          )}
+                          {order.status === "accepted" && (
+                            <>
+                              <Button
+                                variant="info"
+                                onClick={() =>
+                                  updateOrderStatus(order._id, "on the way")
+                                }
+                              >
+                                On the Way
+                              </Button>{" "}
+                              <Button
+                                variant="danger"
+                                onClick={() =>
+                                  updateOrderStatus(order._id, "denied")
+                                }
+                              >
+                                Deny
+                              </Button>
+                            </>
+                          )}
+                          {order.status === "on the way" && (
+                            <Button
+                              variant="primary"
+                              onClick={() =>
+                                updateOrderStatus(order._id, "delivered")
+                              }
+                            >
+                              On the way
+                            </Button>
+                          )}
+                          {order.status === "denied" && (
+                            <Button variant="danger" disabled>
+                              Denied
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       </Container>
     </>
   );
 }
 
-export default Notifications;
+export default Notification;
